@@ -121,4 +121,55 @@ coverage
 
 npm --no-install lint-staged
 ````
+- criar uma configuracao para o lint-staged: .lintstagedrc.js
+```
+module.exports = {
+  // Lint & Prettify TS and JS files
+  '*.{js,jsx,ts,tsx}': (filenames) => [
+    `prettier --write ${filenames.join(' ')}`,
+    `npm run lint --fix . ${filenames.join(' --file')}`
+  ]
+}
+```
+- para testar o lint-staged: coloque false em editor.formatOnSave no vscode, altere um arquivo, p.e. src/page.tsx, e salve.
+  faça um git add .  e tente fazer o commit. A configuração vai impedir o commit de acontecer até que o arquivo seja formatado e corrigido as pendências.
 
+## CONFIGURAR O JEST -  TYPES JEST - JEST ENVIRONMENT JSDOM
+- npm install  --save-dev jest-environment-jsdom jest @types/jest
+- criar o arquivo jest.config.js
+```
+module.exports = {
+  testEnvironment: 'jsdom',
+  testPathIgnorePatterns: ['/node_modules/', '/.next/'],
+  collectCoverage: true,
+  collectCoverageFrom: ['src/**/*.ts(x)?'],
+  setupFilesAfterEnv: ['<rootDir>/.jest/setup.ts'],
+  modulePaths: ['<rootDir>/src/'],
+  transform: {
+    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }]
+  }
+}
+```
+- acrescentar em package.json, scripts o "test": "jest":
+```
+"scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "test": "jest --maxWorkers=50% --passWithNoTests",
+    "test:watch": "jest --watch --maxWorkers=25%",
+    "test:ci": "jest --runInBand",
+    "start": "next start",
+```
+- criar um arquivo setup.ts em .jest/setup.ts, inicialmente vazio.
+- configurar tsconfig.json para que o jest consiga encontrar o types do jest:
+```
+"include": [".jest/setup.ts", "next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+```
+
+##  CONFIGURAR O REACT TESTING LIBRARY
+- npm install --save-dev @testing-library/react @testing-library/jest-dom @testing-library/user-event
+-  importar a biblioteca em .jest/setup.ts:
+```
+import '@testing-library/jest-dom'
+```
+## CRIANDO UM COMPONENTE E UM  TESTE
