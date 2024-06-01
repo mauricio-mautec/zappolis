@@ -1,7 +1,7 @@
 const Main = () => (
-  <div>
+  <main>
     <h1>ZAPPOLIS MAIN</h1>
-  </div>
+  </main>
 )
 
 export default Main
