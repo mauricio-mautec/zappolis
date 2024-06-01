@@ -172,4 +172,118 @@ module.exports = {
 ```
 import '@testing-library/jest-dom'
 ```
-## CRIANDO UM COMPONENTE E UM  TESTE
+## CRIANDO UM COMPONENTE E UM TESTE
+- criar a pasta src/components e dentro dela criar a pasta Main representando o componente
+  dentro da pasta Main criar o arquivo Main.tsx e test.tsx
+
+## CONFIGURAR O LINT-STAGED PARA RODAR O TEST: .lintstagedrc.js
+```
+`npm test -- --findRelatedTests ${filenames.join(' ')}`
+```
+- agora ao fazer o commit ele deverá rodar o prettier o lint e depois o test.
+- quebre o projeto e tent novamente fazer o commit.
+- se precisar commit mesmo com erro, acrescente ao final do commit o --no-verify.
+
+## CONFIGURAR O STYLED COMPONENTS
+- se tiver tailwind, remova primeiro
+- npm install --save-dev styled-components
+- registrar os styled components criando o arquivo registry.tsx em src/lib
+```
+'use client'
+
+import React, { useState } from 'react'
+import { useServerInsertedHTML } from 'next/navigation'
+import { ServerStyleSheet, StyleSheetManager } from 'styled-components'
+
+export default function StyledComponentsRegistry({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  // Only create stylesheet once with lazy initial state
+  // x-ref: https://reactjs.org/docs/hooks-reference.html#lazy-initial-state
+  const [styledComponentsStyleSheet] = useState(() => new ServerStyleSheet())
+
+  useServerInsertedHTML(() => {
+    const styles = styledComponentsStyleSheet.getStyleElement()
+    styledComponentsStyleSheet.instance.clearTag()
+    return <>{styles}</>
+  })
+
+  if (typeof window !== 'undefined') return <>{children}</>
+
+  return (
+    <StyleSheetManager sheet={styledComponentsStyleSheet.instance}>
+      {children}
+    </StyleSheetManager>
+  )
+}
+```
+- agora é preciso importar e registrar os styled components na aplicação.
+  edite src/app/layout.tsx e adicione:
+```
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
+      </body>
+    </html>
+  )
+```
+- edite src/app/page.tsx para incluir o componente Main:
+```
+import Main from '@/components/Main'
+
+export default function Home() {
+  return <Main />
+}
+```
+- crie o arquivo styles.ts dentro  src/components/Main e adicione:
+```
+'use client'
+
+import styled from 'styled-components'
+
+export const Wrapper = styled.main`
+background-color: #06092b;
+color: #fff;
+width: 100%;
+height: 100%;
+padding: 3rem;
+text-align: center;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+`
+```
+- no componente Main, edite a index.tsx carregando os estilos como S e altere:
+```
+import * as S from './styles'
+const Main = () => (
+  <S.Wrapper>
+    <h1>ZAPPOLIS MAIN</h1>
+  </S.Wrapper>
+)
+
+export default Main
+```
+- rodar o test:watch para atualizar o snapshot com 'u': npm run test:watch
+- anular alguns arquivos que não deve ser testados editando o jest.config.js na chave collectCoverageFrom:
+```
+module.exports = {
+  testEnvironment: 'jsdom',
+  testPathIgnorePatterns: ['/node_modules/', '/.next/'],
+  collectCoverage: true,
+  collectCoverageFrom: [
+    'src/**/*.ts(x)?',
+    '!src/app/**', // should be tested in e2e
+    '!src/lib/registry.tsx'
+  ],
+  setupFilesAfterEnv: ['<rootDir>/.jest/setup.ts'],
+  modulePaths: ['<rootDir>/src/'],
+  transform: {
+    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }]
+  }
+}
+```
