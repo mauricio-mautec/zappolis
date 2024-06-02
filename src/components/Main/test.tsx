@@ -8,7 +8,7 @@ describe('<Main />', () => {
     const { container } = render(<Main />)
     // busca o elemento e verifica a existencia
     expect(
-      screen.getByRole('heading', { name: /ZAPPOLIS MAIN/i })
+      screen.getByRole('heading', { name: /ZAPPOLIS/i })
     ).toBeInTheDocument()
 
     // gerar snapshot

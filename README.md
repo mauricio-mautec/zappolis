@@ -330,3 +330,15 @@ export function Providers({ children }: PropsWithChildren) {
 }
 ```
 - incluir providers.tsx dentro de layout.tsx
+```
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <StyledComponentsRegistry>
+          <Providers>{children}</Providers>
+        </StyledComponentsRegistry>
+      </body>
+    </html>
+  )
+}
+```
