@@ -342,3 +342,91 @@ export function Providers({ children }: PropsWithChildren) {
   )
 }
 ```
+## MELHOR CONFIGURAÇÃO DO JEST COM STYLED COMPONENTS
+- npm install --save-dev jest-styled-components
+- adicione o arquivo jest-styled-components.d.ts em src/types:
+  ele vai prover os types e matchers do jest styled components
+```
+declare module 'jest-styled-components' {
+  export * from '@testing-library/jest-dom/matchers'
+}
+```
+// Types provided from the official repo:
+// https://github.com/styled-components/jest-styled-components/blob/master/typings/index.d.ts
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/ban-types */
+import { NewPlugin } from 'pretty-format'
+import { css } from 'styled-components'
+
+declare global {
+  namespace jest {
+    interface AsymmetricMatcher {
+      $$typeof: Symbol
+      sample?: string | RegExp | object | Array<any> | Function
+    }
+
+    type Value = string | number | RegExp | AsymmetricMatcher | undefined
+
+    interface Options {
+      media?: string
+      modifier?: string | ReturnType<typeof css>
+      supports?: string
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    interface Matchers<R, T> {
+      toHaveStyleRule(property: string, value?: Value, options?: Options): R
+    }
+  }
+}
+
+export interface StyledComponentsSerializerOptions {
+  addStyles?: boolean
+  classNameFormatter?: (index: number) => string
+}
+
+export declare const styleSheetSerializer: NewPlugin & {
+  setStyleSheetSerializerOptions: (
+    options?: StyledComponentsSerializerOptions
+  ) => void
+}
+```
+- importar no setup  do jest: .jest/setup.ts o jest-styled-components.d.ts
+```
+import '@testing-library/jest-dom'
+import 'jest-styled-components'
+```
+- adicionar na configuração do jest (jest.config.js) o  moduleNameMapper:
+```
+  moduleNameMapper: {
+  'styled-components': 'styled-components/dist/styled-components.browser.cjs.js'
+  }
+```
+- ignorar a pasta types e styles na cobertura do test em jest.config.ts:
+  adicione '!src/types/**' e '!src/styles/**' no arquivo
+- teste do componente pode agora incluir a cor de fundo src/components/Main/test.tsx:
+```
+import { render, screen } from '@testing-library/react'
+
+import Main from '.'
+
+describe('<Main />', () => {
+  it('should render the heading', () => {
+    // renderiza o  componente
+    const { container } = render(<Main />)
+    // busca o elemento e verifica a existencia
+    expect(
+      screen.getByRole('heading', { name: /ZAPPOLIS/i })
+    ).toBeInTheDocument()
+
+    // gerar snapshot
+    expect(container.firstChild).toMatchSnapshot()
+  })
+
+  it('should render the colors correctly', () => {
+    const { container } = render(<Main />)
+    expect(container.firstChild).toHaveStyle({ 'background-color': '#ffb8b8' })
+  })
+})
+```
