@@ -263,7 +263,7 @@ justify-content: center;
 `
 ```
 - no componente Main, edite a index.tsx carregando os estilos como S e altere:
-```
+```typescript
 import * as S from './styles'
 const Main = () => (
   <S.Wrapper>
@@ -275,7 +275,7 @@ export default Main
 ```
 - rodar o test:watch para atualizar o snapshot com 'u': npm run test:watch
 - anular alguns arquivos que não deve ser testados editando o jest.config.js na chave collectCoverageFrom:
-```
+```javascript
 module.exports = {
   testEnvironment: 'jsdom',
   testPathIgnorePatterns: ['/node_modules/', '/.next/'],
@@ -296,7 +296,7 @@ module.exports = {
 
 ## CRIANDO UM GLOBAL STYLE
 - crie o arquivo src/styles/global.ts:
-```
+```typescript
 import { createGlobalStyle } from "styled-components";
 
 const GlobalStyles = createGlobalStyle`
@@ -322,7 +322,7 @@ const GlobalStyles = createGlobalStyle`
 export default GlobalStyles
 ```
 - adicione o arquivo providers.tsx em src/app:
-```
+```typescript
 import { PropsWithChildren } from 'react'
 
 export function Providers({ children }: PropsWithChildren) {
@@ -335,7 +335,7 @@ export function Providers({ children }: PropsWithChildren) {
 }
 ```
 - incluir providers.tsx dentro de layout.tsx
-```
+```typescript
   return (
     <html lang="en">
       <body className={inter.className}>
@@ -398,12 +398,12 @@ export declare const styleSheetSerializer: NewPlugin & {
 }
 ```
 - importar no setup  do jest: .jest/setup.ts o jest-styled-components.d.ts
-```
+```typescript
 import '@testing-library/jest-dom'
 import 'jest-styled-components'
 ```
 - adicionar na configuração do jest (jest.config.js) o  moduleNameMapper:
-```
+```javascript
   moduleNameMapper: {
   'styled-components': 'styled-components/dist/styled-components.browser.cjs.js'
   }
@@ -411,7 +411,7 @@ import 'jest-styled-components'
 - ignorar a pasta types e styles na cobertura do test em jest.config.ts:
   adicione '!src/types/**' e '!src/styles/**' no arquivo
 - teste do componente pode agora incluir a cor de fundo src/components/Main/test.tsx:
-```
+```typescript
 import { render, screen } from '@testing-library/react'
 
 import Main from '.'
@@ -439,7 +439,7 @@ describe('<Main />', () => {
 - npx storybook@latest init
 - apaga diretorio stories
 - configura .storybook/main.ts
-```
+```typescript
 import type { StorybookConfig } from '@storybook/nextjs'
 
 const config: StorybookConfig = {
@@ -464,7 +464,7 @@ const config: StorybookConfig = {
 export default config
 ```
 - cria um storie.tsx para o componente Main:
-```
+```typescript
 import { Meta, StoryObj } from '@storybook/react'
 
 import Main from '.'
@@ -485,7 +485,7 @@ export const Default: StoryObj = {
 }
 ```
 - configuar o .storybook/preview.tsx (era preview.ts e mudou para tsx) para carregar o global style como acontece no layout.tsx
-```
+```typescript
 import React from 'react'
 import GlobalStyles from '../src/styles/global'
 
@@ -502,7 +502,7 @@ export const decorators = [
 ## CONFIGURAÇÃO DO PLOP
 - npm install --save-dev plop
 - criar arquivo generators/plopfile.js:
-```
+```javascript
 module.exports = (plop) => {
   // create your generators here
   plop.setGenerator('component', {
@@ -512,13 +512,41 @@ module.exports = (plop) => {
       "name": "name",
       "message": "What is the component name?"
     }], // array of inquirer prompts
-    actions: []  // array of actions
+    actions: [
+      {
+        type: 'add',
+        path: '../src/components/{{pascalCase name}}/index.tsx',
+        templateFile: 'templates/Component.tsx.hbs',
+        skipIfExists: true
+      },
+      {
+        type: 'add',
+        path: '../src/components/{{pascalCase name}}/styles.ts',
+        templateFile: 'templates/styles.ts.hbs',
+        skipIfExists: true
+      },
+      {
+        type: 'add',
+        path: '../src/components/{{pascalCase name}}/stories.tsx',
+        templateFile: 'templates/stories.tsx.hbs',
+        skipIfExists: true
+      },
+      {
+        type: 'add',
+        path: '../src/components/{{pascalCase name}}/test.tsx',
+        templateFile: 'templates/test.tsx.hbs',
+        skipIfExists: true
+      }
+    ]  // array of actions
   });
 };
 ```
 - configurar package.json:
 ```
     "test:ci": "jest --runInBand",
-    "generate": "npx --no plop --plopfile generators/plopfile.js",
+    "generate": "npx plop --plopfile generators/plopfile.js",
     "start": "next start",
 ```
+- para criar um component de testes:
+  npm run generate
+
