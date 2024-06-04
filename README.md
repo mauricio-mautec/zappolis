@@ -550,3 +550,43 @@ module.exports = (plop) => {
 - para criar um component de testes:
   npm run generate
 
+## CI - INTEGRAÇÃO CONTINUA COM GITHUB
+- configurar .github/workflows/ci.yml
+```yaml
+name:  ci
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Linting
+        run: npm run lint
+
+      - name: Testing
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+```
+- para testar criar um novo brach, fazer alterações e depois criar um pull request
+```bash
+git checkout -b chore/update-readme
+git add .
+git commit -m "Atualizando README"
+git push origin chore/update-readme
+```
+
