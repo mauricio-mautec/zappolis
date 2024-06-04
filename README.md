@@ -589,4 +589,8 @@ git add .
 git commit -m "Atualizando README"
 git push origin chore/update-readme
 ```
+- para criar um pull request deve-se ir até o link do repositório no github.
+
+## INICIANDO O PROJETO ATRAVÉS DO BOILERPLATE
+- npx create-next-app@latest --example https://github.com/mauricio-mautec/zappolis.git
 
