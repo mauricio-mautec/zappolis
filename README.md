@@ -48,6 +48,11 @@ insert_final_newline = true
     }
 }
 ```
+.eslintignore
+```
+!.storybook
+!.jest
+```
 ## CONFIGURAR O PRETTIER
 - npm install --save-dev --save-exact prettier
 
@@ -429,4 +434,91 @@ describe('<Main />', () => {
     expect(container.firstChild).toHaveStyle({ 'background-color': '#ffb8b8' })
   })
 })
+```
+## CONFIGURAÇÃO DO STORYBOOK
+- npx storybook@latest init
+- apaga diretorio stories
+- configura .storybook/main.ts
+```
+import type { StorybookConfig } from '@storybook/nextjs'
+
+const config: StorybookConfig = {
+  stories: ['../src/**/stories.tsx'],
+  addons: [
+    '@storybook/addon-essentials',
+    '@chromatic-com/storybook'
+  ],
+  framework: {
+    name: '@storybook/nextjs',
+    options: {}
+  },
+  staticDirs: ['../public'],
+  webpackFinal: (config) => {
+    config.resolve?.modules?.push(`${process.cwd()}/src`)
+    return config
+  },
+  docs: {
+    autodocs: true
+  }
+}
+export default config
+```
+- cria um storie.tsx para o componente Main:
+```
+import { Meta, StoryObj } from '@storybook/react'
+
+import Main from '.'
+
+export default {
+  title: 'Main',
+  component: Main,
+  parameters: {
+    layout: 'fullscreen'
+  }
+} as Meta
+
+export const Default: StoryObj = {
+  args: {
+    title: 'ZappoliS',
+    description: 'The Commerce Community'
+  }
+}
+```
+- configuar o .storybook/preview.tsx (era preview.ts e mudou para tsx) para carregar o global style como acontece no layout.tsx
+```
+import React from 'react'
+import GlobalStyles from '../src/styles/global'
+
+export const decorators = [
+  (Story) => (
+    <>
+      <GlobalStyles />
+      <Story />
+    </>
+  )
+]
+```
+
+## CONFIGURAÇÃO DO PLOP
+- npm install --save-dev plop
+- criar arquivo generators/plopfile.js:
+```
+module.exports = (plop) => {
+  // create your generators here
+  plop.setGenerator('component', {
+    description: 'Create a component',
+    prompts: [{
+      "type": "input",
+      "name": "name",
+      "message": "What is the component name?"
+    }], // array of inquirer prompts
+    actions: []  // array of actions
+  });
+};
+```
+- configurar package.json:
+```
+    "test:ci": "jest --runInBand",
+    "generate": "npx --no plop --plopfile generators/plopfile.js",
+    "start": "next start",
 ```
